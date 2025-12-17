@@ -1,6 +1,6 @@
 (() => {
   const $ = (id) => document.getElementById(id);
-  let token = "";
+  let token = localStorage.getItem("token") || "";
   $("btn-send-otp").onclick = async () => {
     const phone = $("phone").value.trim();
     const r = await fetch("/api/auth/request-otp", {
@@ -22,6 +22,7 @@
     if (!r.ok) return showMsg("کد تایید نامعتبر است");
     const j = await r.json();
     token = j.token;
+    try { localStorage.setItem("token", token); } catch {}
     await refreshCredit();
     hide("step-otp"); show("step-credit");
   };
@@ -63,11 +64,27 @@
   };
   async function refreshCredit() {
     const r = await fetch(`/api/credit?token=${encodeURIComponent(token)}`);
-    if (!r.ok) return showMsg("خطا در دریافت اعتبار");
+    if (!r.ok) { return false; }
     const j = await r.json();
     $("credit-info").textContent = `اعتبار شما: ${j.credits}`;
+    return true;
   }
   function show(id){ $(id).classList.remove("hidden"); }
   function hide(id){ $(id).classList.add("hidden"); }
   function showMsg(t){ $("msg").textContent = t; setTimeout(()=> $("msg").textContent="", 4000); }
+  async function init(){
+    if (token) {
+      const ok = await refreshCredit();
+      if (ok) {
+        hide("step-phone"); hide("step-otp"); show("step-credit");
+        return;
+      } else {
+        token = "";
+        try { localStorage.removeItem("token"); } catch {}
+      }
+    }
+    show("step-phone");
+    hide("step-otp"); hide("step-credit"); hide("step-inputs"); hide("stream");
+  }
+  init();
 })();
