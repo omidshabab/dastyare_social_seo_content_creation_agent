@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>دستیار تولید محتوای سئو شده — دستیار سوشال</title>
+    <link rel="preload" href="/fonts/estedad/Estedad-FD-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/estedad/Estedad-FD-Bold.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <header>
+      <h1>دستیار تولید محتوای سئو شده — دستیار سوشال</h1>
+    </header>
+    <main id="app">
+      <section id="step-phone" class="step">
+        <label for="phone">شماره موبایل</label>
+        <input id="phone" type="tel" placeholder="مثلاً 0912xxxxxxx">
+        <button id="btn-send-otp">ارسال کد تایید</button>
+        <div class="hint">کد پنج‌رقمی برای شما پیامک می‌شود.</div>
+      </section>
+      <section id="step-otp" class="step hidden">
+        <label for="otp">کد تایید</label>
+        <input id="otp" type="text" maxlength="5" placeholder="کد پنج‌رقمی">
+        <button id="btn-verify-otp">ورود</button>
+      </section>
+      <section id="step-credit" class="step hidden">
+        <div id="credit-info"></div>
+        <div class="charge">
+          <label for="amount">شارژ اعتبار</label>
+          <input id="amount" type="number" min="1" value="1">
+          <button id="btn-charge">شارژ</button>
+        </div>
+        <button id="btn-next-inputs">ادامه</button>
+      </section>
+      <section id="step-inputs" class="step hidden">
+        <label for="topic">موضوع مقاله</label>
+        <input id="topic" type="text" placeholder="موضوع">
+        <label for="keywords">کلمات کلیدی</label>
+        <input id="keywords" type="text" placeholder="مثلاً: سئو، تولید محتوا">
+        <label for="tone">لحن نوشتار</label>
+        <select id="tone">
+          <option value="رسمی">رسمی</option>
+          <option value="دوستانه">دوستانه</option>
+          <option value="تبلیغاتی">تبلیغاتی</option>
+        </select>
+        <label for="faq">سوالات متداول اضافه شود؟</label>
+        <select id="faq">
+          <option value="yes">بله</option>
+          <option value="no">خیر</option>
+        </select>
+        <button id="btn-start">شروع تولید محتوا</button>
+      </section>
+      <section id="stream" class="hidden">
+        <div id="out-title" class="block"></div>
+        <div id="out-intro" class="block"></div>
+        <div id="out-toc" class="block"></div>
+        <div id="out-sections" class="block"></div>
+        <div id="out-conclusion" class="block"></div>
+        <div id="out-faq" class="block"></div>
+      </section>
+      <div id="msg" class="msg"></div>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+  </html>
