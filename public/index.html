@@ -11,8 +11,17 @@
   <body>
     <header>
       <h1>دستیار تولید محتوای سئو شده — دستیار سوشال</h1>
+      <div class="header-actions">
+        <div id="credit-info" class="credit hidden"></div>
+        <button id="btn-logout" class="hidden">خروج</button>
+      </div>
     </header>
-    <main id="app">
+    <div class="layout">
+      <aside id="sidebar" class="sidebar hidden">
+        <div class="sidebar-title">محتواهای شما</div>
+        <ul id="content-list" class="content-list"></ul>
+      </aside>
+      <main id="app" class="content">
       <section id="step-phone" class="step">
         <label for="phone">شماره موبایل</label>
         <input id="phone" type="tel" placeholder="مثلاً 0912xxxxxxx">
@@ -25,7 +34,6 @@
         <button id="btn-verify-otp">ورود</button>
       </section>
       <section id="step-credit" class="step hidden">
-        <div id="credit-info"></div>
         <div class="charge">
           <label for="amount">شارژ اعتبار</label>
           <input id="amount" type="number" min="1" value="1">
@@ -60,7 +68,8 @@
         <div id="out-faq" class="block"></div>
       </section>
       <div id="msg" class="msg"></div>
-    </main>
+      </main>
+    </div>
     <script src="/app.js"></script>
   </body>
   </html>

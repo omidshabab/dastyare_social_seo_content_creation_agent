@@ -1,6 +1,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   let token = localStorage.getItem("token") || "";
+
   $("btn-send-otp").onclick = async () => {
     const phone = $("phone").value.trim();
     const r = await fetch("/api/auth/request-otp", {
@@ -11,6 +12,7 @@
     if (!r.ok) return showMsg("ارسال پیامک ناموفق بود");
     hide("step-phone"); show("step-otp");
   };
+
   $("btn-verify-otp").onclick = async () => {
     const phone = $("phone").value.trim();
     const code = $("otp").value.trim();
@@ -24,8 +26,25 @@
     token = j.token;
     try { localStorage.setItem("token", token); } catch {}
     await refreshCredit();
-    hide("step-otp"); show("step-credit");
+    hide("step-otp"); show("step-inputs");
+    show("btn-logout");
+    show("credit-info");
+    show("sidebar");
+    renderSidebar();
   };
+
+  $("btn-logout").onclick = () => {
+    token = "";
+    try { localStorage.removeItem("token"); } catch {}
+    hide("btn-logout");
+    hide("credit-info");
+    hide("sidebar");
+    show("step-phone");
+    hide("step-otp"); hide("step-credit"); hide("step-inputs"); hide("stream");
+    $("phone").value = "";
+    $("otp").value = "";
+  };
+
   $("btn-charge").onclick = async () => {
     const amount = Number($("amount").value || 0);
     const r = await fetch(`/api/credit/charge?token=${encodeURIComponent(token)}`, {
@@ -37,9 +56,11 @@
     const j = await r.json();
     $("credit-info").textContent = `اعتبار شما: ${j.credits}`;
   };
+
   $("btn-next-inputs").onclick = () => {
     hide("step-credit"); show("step-inputs");
   };
+
   $("btn-start").onclick = async () => {
     const topic = $("topic").value.trim();
     const keywords = $("keywords").value.trim();
@@ -53,30 +74,63 @@
     $("out-conclusion").textContent = "";
     $("out-faq").textContent = "";
     const src = new EventSource(`/api/content/stream?token=${encodeURIComponent(token)}&topic=${encodeURIComponent(topic)}&keywords=${encodeURIComponent(keywords)}&tone=${encodeURIComponent(tone)}&faq=${encodeURIComponent(faq)}`);
-    src.addEventListener("title", (e) => $("out-title").textContent += e.data);
-    src.addEventListener("intro", (e) => $("out-intro").textContent += e.data);
-    src.addEventListener("toc", (e) => $("out-toc").textContent += e.data);
-    src.addEventListener("sections", (e) => $("out-sections").textContent += e.data);
-    src.addEventListener("conclusion", (e) => $("out-conclusion").textContent += e.data);
-    src.addEventListener("faq", (e) => $("out-faq").textContent += e.data);
-    src.addEventListener("close", () => src.close());
+    const generated = { title: "", intro: "", toc: "", sections: "", conclusion: "", faq: "", topic, keywords, tone, createdAt: Date.now() };
+    src.addEventListener("title", (e) => { $("out-title").textContent += e.data; generated.title += e.data; });
+    src.addEventListener("intro", (e) => { $("out-intro").textContent += e.data; generated.intro += e.data; });
+    src.addEventListener("toc", (e) => { $("out-toc").textContent += e.data; generated.toc += e.data; });
+    src.addEventListener("sections", (e) => { $("out-sections").textContent += e.data; generated.sections += e.data; });
+    src.addEventListener("conclusion", (e) => { $("out-conclusion").textContent += e.data; generated.conclusion += e.data; });
+    src.addEventListener("faq", (e) => { $("out-faq").textContent += e.data; generated.faq += e.data; });
+    src.addEventListener("close", () => { src.close(); saveGenerated(generated); renderSidebar(); });
     src.onerror = () => { showMsg("خطا در استریم"); src.close(); };
   };
+
   async function refreshCredit() {
     const r = await fetch(`/api/credit?token=${encodeURIComponent(token)}`);
     if (!r.ok) { return false; }
     const j = await r.json();
     $("credit-info").textContent = `اعتبار شما: ${j.credits}`;
+    show("credit-info");
     return true;
   }
+  function getStoredContents() {
+    try { return JSON.parse(localStorage.getItem("createdContents") || "[]"); } catch { return []; }
+  }
+  function setStoredContents(list) {
+    try { localStorage.setItem("createdContents", JSON.stringify(list)); } catch {}
+  }
+  function saveGenerated(item) {
+    const list = getStoredContents();
+    list.push(item);
+    setStoredContents(list);
+  }
+  function renderSidebar() {
+    const list = getStoredContents();
+    const ul = document.getElementById("content-list");
+    if (!ul) return;
+    ul.innerHTML = "";
+    const items = list.slice().reverse();
+    for (const it of items) {
+      const li = document.createElement("li");
+      li.className = "content-item";
+      li.textContent = it.title || it.topic || "بدون عنوان";
+      ul.appendChild(li);
+    }
+  }
+
   function show(id){ $(id).classList.remove("hidden"); }
   function hide(id){ $(id).classList.add("hidden"); }
   function showMsg(t){ $("msg").textContent = t; setTimeout(()=> $("msg").textContent="", 4000); }
+
   async function init(){
     if (token) {
       const ok = await refreshCredit();
       if (ok) {
-        hide("step-phone"); hide("step-otp"); show("step-credit");
+        hide("step-phone"); hide("step-otp"); show("step-inputs");
+        show("btn-logout");
+        show("credit-info");
+        show("sidebar");
+        renderSidebar();
         return;
       } else {
         token = "";
@@ -85,6 +139,9 @@
     }
     show("step-phone");
     hide("step-otp"); hide("step-credit"); hide("step-inputs"); hide("stream");
+    hide("btn-logout");
+    hide("credit-info");
+    hide("sidebar");
   }
   init();
 })();
